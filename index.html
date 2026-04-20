@@ -1,0 +1,3821 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PackRoute — Send packages through real travelers</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --coral: #da7756;
+        --coral-2: #c4623d;
+        --coral-3: #a84e2e;
+        --sand: #f9f4ee;
+        --sand-2: #f0e8dc;
+        --sand-3: #e4d5c4;
+        --ink: #1c1714;
+        --ink-2: #2e2720;
+        --ink-3: #4a4039;
+        --muted: #8c7d72;
+        --muted-2: #b0a49a;
+        --white: #ffffff;
+        --cream: #fbf8f4;
+        --green: #2e7d52;
+        --green-bg: #e8f5ee;
+        --red: #b03030;
+        --red-bg: #faeaea;
+        --border: #e0d5c8;
+        --border-2: #d0c4b5;
+        --r: 12px;
+        --r-sm: 8px;
+        --r-lg: 16px;
+        --r-xl: 20px;
+        --shadow: 0 2px 16px rgba(28, 23, 20, 0.07);
+        --shadow-lg: 0 8px 40px rgba(28, 23, 20, 0.12);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        font-size: 16px;
+      }
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: var(--cream);
+        color: var(--ink);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+      h1,
+      h2,
+      h3,
+      .serif {
+        font-family: "Fraunces", Georgia, serif;
+      }
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+      button,
+      input,
+      textarea,
+      select {
+        font-family: inherit;
+        font-size: inherit;
+      }
+      img {
+        max-width: 100%;
+      }
+      .page {
+        display: none;
+        min-height: 100vh;
+        flex-direction: column;
+      }
+      .page.active {
+        display: flex;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .page.active > * {
+        animation: fadeIn 0.25s ease both;
+      }
+      ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--sand-3);
+        border-radius: 2px;
+      }
+
+      /* NAV */
+      nav {
+        background: var(--white);
+        border-bottom: 1px solid var(--border);
+        height: 58px;
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        position: sticky;
+        top: 0;
+        z-index: 200;
+        flex-shrink: 0;
+      }
+      .nav-logo {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        cursor: pointer;
+        margin-right: auto;
+      }
+      .nav-logo-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--coral);
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .nav-logo-text {
+        font-family: "Fraunces", serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .nav-links {
+        display: flex;
+        list-style: none;
+        height: 58px;
+      }
+      .nav-links li a {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0 14px;
+        height: 100%;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--muted);
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition:
+          color 0.15s,
+          border-color 0.15s;
+        white-space: nowrap;
+      }
+      .nav-links li a:hover,
+      .nav-links li a.active {
+        color: var(--ink);
+        border-bottom-color: var(--coral);
+      }
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: 20px;
+      }
+      .avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--coral);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        flex-shrink: 0;
+        text-transform: uppercase;
+      }
+
+      /* BUTTONS */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 0.55rem 1.1rem;
+        border-radius: var(--r-sm);
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+        border: none;
+        line-height: 1.2;
+      }
+      .btn-primary {
+        background: var(--coral);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--coral-2);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(218, 119, 86, 0.3);
+      }
+      .btn-secondary {
+        background: var(--white);
+        color: var(--ink);
+        border: 1px solid var(--border);
+      }
+      .btn-secondary:hover {
+        background: var(--sand);
+        border-color: var(--border-2);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid transparent;
+      }
+      .btn-ghost:hover {
+        background: var(--sand);
+        color: var(--ink);
+      }
+      .btn-danger {
+        background: var(--red-bg);
+        color: var(--red);
+        border: 1px solid #f0c0c0;
+      }
+      .btn-sm {
+        padding: 0.4rem 0.85rem;
+        font-size: 0.8rem;
+      }
+      .btn-lg {
+        padding: 0.7rem 1.5rem;
+        font-size: 0.95rem;
+      }
+      .btn-block {
+        width: 100%;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      /* FORMS */
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .field label,
+      .label {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--ink-3);
+      }
+      input[type="text"],
+      input[type="email"],
+      input[type="password"],
+      input[type="number"],
+      input[type="date"],
+      textarea,
+      select {
+        width: 100%;
+        padding: 0.6rem 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: var(--r-sm);
+        font-size: 0.9rem;
+        color: var(--ink);
+        background: var(--white);
+        outline: none;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+      }
+      input:focus,
+      textarea:focus,
+      select:focus {
+        border-color: var(--coral);
+        box-shadow: 0 0 0 3px rgba(218, 119, 86, 0.12);
+      }
+      textarea {
+        resize: vertical;
+        min-height: 80px;
+        line-height: 1.6;
+      }
+      select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%238C7D72' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.8rem center;
+        padding-right: 2.2rem;
+      }
+      .field-row {
+        display: grid;
+        gap: 12px;
+      }
+      .field-row.cols-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+      .field-row.cols-3 {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+      .input-error {
+        border-color: var(--red) !important;
+      }
+      .field-error {
+        font-size: 0.75rem;
+        color: var(--red);
+        margin-top: 2px;
+      }
+
+      /* CARDS */
+      .card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 20px;
+      }
+      .card-sm {
+        padding: 14px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0.2rem 0.65rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .chip-urgent {
+        background: #fee8e0;
+        color: #b03520;
+      }
+      .chip-open {
+        background: var(--green-bg);
+        color: var(--green);
+      }
+      .chip-matched {
+        background: #e8f0fe;
+        color: #1a4fa8;
+      }
+      .chip-closed {
+        background: var(--sand-2);
+        color: var(--muted);
+      }
+      .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 0.5rem 0;
+      }
+      .badge {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--coral);
+        color: #fff;
+        font-size: 0.65rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .tag {
+        display: inline-flex;
+        padding: 0.15rem 0.55rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        background: var(--sand-2);
+        color: var(--ink-3);
+      }
+
+      /* LOADER */
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--border);
+        border-top-color: var(--coral);
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        display: inline-block;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .page-loader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 60px;
+        flex-direction: column;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 0.875rem;
+      }
+
+      /* AUTH PAGE */
+      #page-auth {
+        background: var(--sand);
+        align-items: center;
+        justify-content: center;
+        padding: 40px 16px;
+        position: relative;
+        overflow: hidden;
+      }
+      #page-auth::before {
+        content: "";
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(218, 119, 86, 0.18) 0%,
+          transparent 70%
+        );
+        top: -200px;
+        right: -150px;
+        pointer-events: none;
+      }
+      #page-auth::after {
+        content: "";
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(218, 119, 86, 0.12) 0%,
+          transparent 70%
+        );
+        bottom: -150px;
+        left: -100px;
+        pointer-events: none;
+      }
+      .auth-wrap {
+        display: grid;
+        grid-template-columns: 1fr 420px;
+        gap: 60px;
+        align-items: center;
+        max-width: 900px;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+      }
+      .auth-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 0.35rem 0.9rem;
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-bottom: 24px;
+      }
+      .auth-hero-badge span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+        flex-shrink: 0;
+      }
+      .auth-hero h1 {
+        font-family: "Fraunces", serif;
+        font-size: 2.8rem;
+        font-weight: 400;
+        line-height: 1.15;
+        color: var(--ink);
+        margin-bottom: 20px;
+      }
+      .auth-hero h1 em {
+        color: var(--coral);
+        font-style: italic;
+      }
+      .auth-hero p {
+        font-size: 0.95rem;
+        color: var(--muted);
+        line-height: 1.7;
+        margin-bottom: 32px;
+        max-width: 380px;
+      }
+      .auth-stats {
+        display: flex;
+        gap: 24px;
+      }
+      .auth-stat strong {
+        display: block;
+        font-family: "Fraunces", serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--coral);
+      }
+      .auth-stat span {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .auth-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r-xl);
+        padding: 32px;
+        box-shadow: var(--shadow-lg);
+      }
+      .auth-tabs {
+        display: flex;
+        background: var(--sand);
+        border-radius: var(--r-sm);
+        padding: 3px;
+        margin-bottom: 24px;
+      }
+      .auth-tab {
+        flex: 1;
+        padding: 0.5rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--muted);
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.15s;
+        border: none;
+        background: none;
+        font-family: inherit;
+      }
+      .auth-tab.active {
+        background: var(--white);
+        color: var(--ink);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      }
+      .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+      .auth-divider::before,
+      .auth-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+      .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0.6rem;
+        border: 1px solid var(--border);
+        border-radius: var(--r-sm);
+        font-size: 0.85rem;
+        color: var(--ink);
+        cursor: pointer;
+        transition: background 0.15s;
+        background: var(--white);
+        width: 100%;
+      }
+      .social-btn:hover {
+        background: var(--sand);
+      }
+      .auth-footer {
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-top: 14px;
+      }
+      .auth-footer a {
+        color: var(--coral);
+        cursor: pointer;
+        font-weight: 500;
+      }
+      .auth-err {
+        background: var(--red-bg);
+        border: 1px solid #f0c0c0;
+        border-radius: var(--r-sm);
+        padding: 0.65rem 0.9rem;
+        font-size: 0.82rem;
+        color: var(--red);
+        display: none;
+      }
+      .auth-err.show {
+        display: block;
+      }
+
+      /* HOME FEED */
+      .home-layout {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 20px;
+        max-width: 1100px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 24px 20px;
+        flex: 1;
+      }
+      .feed-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+      .feed-top h2 {
+        font-family: "Fraunces", serif;
+        font-size: 1.3rem;
+        font-weight: 400;
+      }
+      .feed-filters {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .filter-btn {
+        padding: 0.35rem 0.85rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border: 1px solid var(--border);
+        background: var(--white);
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .filter-btn.active,
+      .filter-btn:hover {
+        background: var(--coral);
+        color: #fff;
+        border-color: var(--coral);
+      }
+      .req-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 18px;
+        margin-bottom: 12px;
+        transition:
+          box-shadow 0.15s,
+          transform 0.15s;
+        cursor: default;
+      }
+      .req-card:hover {
+        box-shadow: var(--shadow);
+        transform: translateY(-1px);
+      }
+      .req-card-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+      .req-author {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+      .req-author-info strong {
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: block;
+        color: var(--ink);
+      }
+      .req-author-info span {
+        font-size: 0.76rem;
+        color: var(--muted);
+      }
+      .req-route {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .req-route-city {
+        font-family: "Fraunces", serif;
+        font-size: 1.05rem;
+        font-weight: 400;
+        color: var(--ink);
+      }
+      .req-route-arrow {
+        color: var(--coral);
+        display: flex;
+        align-items: center;
+      }
+      .req-desc {
+        font-size: 0.85rem;
+        color: var(--ink-3);
+        line-height: 1.6;
+        margin-bottom: 12px;
+      }
+      .req-meta {
+        display: flex;
+        gap: 14px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      .req-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .req-meta-item strong {
+        color: var(--ink);
+        font-weight: 500;
+      }
+      .req-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+      }
+      .req-reward {
+        font-family: "Fraunces", serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--coral);
+      }
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .sidebar-section-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 8px;
+      }
+      .route-finder {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 16px;
+      }
+      .route-input-row {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 6px;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .route-sep {
+        color: var(--coral);
+        font-size: 1.1rem;
+        padding-top: 4px;
+      }
+      .chat-preview {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+      }
+      .chat-prev-item {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 11px 14px;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        transition: background 0.12s;
+      }
+      .chat-prev-item:hover {
+        background: var(--sand);
+      }
+      .chat-prev-item:last-child {
+        border-bottom: none;
+      }
+      .chat-prev-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .chat-prev-info strong {
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: block;
+      }
+      .chat-prev-info span {
+        font-size: 0.75rem;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+      }
+      .chat-prev-time {
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+
+      /* POST REQUEST */
+      .post-layout {
+        max-width: 680px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 24px 20px;
+        flex: 1;
+      }
+      .page-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .back-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--border);
+        background: var(--white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--ink);
+        transition: background 0.15s;
+        flex-shrink: 0;
+      }
+      .back-btn:hover {
+        background: var(--sand);
+      }
+      .page-header h1 {
+        font-family: "Fraunces", serif;
+        font-size: 1.5rem;
+        font-weight: 400;
+      }
+      .page-header p {
+        font-size: 0.82rem;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .form-section {
+        margin-bottom: 6px;
+      }
+      .form-section-title {
+        font-size: 0.72rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--coral);
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border);
+      }
+      .tag-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+      .tag-chip {
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border: 1px solid var(--border);
+        background: var(--white);
+        color: var(--ink-3);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .tag-chip:hover,
+      .tag-chip.sel {
+        background: var(--coral);
+        color: #fff;
+        border-color: var(--coral);
+      }
+      .drop-zone {
+        border: 2px dashed var(--border-2);
+        border-radius: var(--r);
+        padding: 24px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.15s;
+      }
+      .drop-zone:hover {
+        border-color: var(--coral);
+      }
+      .drop-zone p {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+      .drop-zone a {
+        color: var(--coral);
+        font-weight: 500;
+      }
+      .prefix-input {
+        position: relative;
+      }
+      .prefix-input::before {
+        content: attr(data-prefix);
+        position: absolute;
+        left: 0.85rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        font-size: 0.9rem;
+        pointer-events: none;
+      }
+      .prefix-input input {
+        padding-left: 1.6rem;
+      }
+
+      /* VIEW REQUEST */
+      .view-layout {
+        display: grid;
+        grid-template-columns: 1fr 280px;
+        gap: 20px;
+        max-width: 1100px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 24px 20px;
+        flex: 1;
+        align-items: start;
+      }
+      .view-main > * {
+        margin-bottom: 12px;
+      }
+      .view-hero {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 22px;
+      }
+      .view-route-viz {
+        background: var(--sand);
+        border-radius: var(--r);
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 16px 0;
+      }
+      .view-city {
+        text-align: center;
+      }
+      .view-city strong {
+        display: block;
+        font-family: "Fraunces", serif;
+        font-size: 1.1rem;
+      }
+      .view-city span {
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+      .route-line {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        padding: 0 10px;
+      }
+      .route-line::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 1px;
+        background: var(--border-2);
+      }
+      .route-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--coral);
+        border: 2px solid var(--white);
+        position: absolute;
+        box-shadow: 0 0 0 2px var(--coral);
+      }
+      .route-dot.left {
+        left: 8px;
+      }
+      .route-dot.right {
+        right: 8px;
+      }
+      .route-badge {
+        background: var(--coral);
+        color: #fff;
+        border-radius: 20px;
+        padding: 0.2rem 0.7rem;
+        font-size: 0.72rem;
+        font-weight: 500;
+        position: relative;
+        z-index: 1;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 16px 0;
+      }
+      .stat-box {
+        background: var(--sand);
+        border-radius: var(--r-sm);
+        padding: 12px;
+        text-align: center;
+      }
+      .stat-box strong {
+        display: block;
+        font-family: "Fraunces", serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--coral);
+      }
+      .stat-box span {
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+      .req-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .req-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 0.875rem;
+        color: var(--ink-3);
+        line-height: 1.5;
+      }
+      .req-list li::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--coral);
+        flex-shrink: 0;
+        margin-top: 0.45rem;
+      }
+      .qna-item {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .qna-bubble {
+        flex: 1;
+        background: var(--sand);
+        border-radius: var(--r-sm);
+        padding: 10px 13px;
+      }
+      .qna-bubble.answer {
+        background: #fef4f0;
+        border-left: 3px solid var(--coral);
+      }
+      .qna-name {
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-bottom: 3px;
+      }
+      .qna-text {
+        font-size: 0.85rem;
+        color: var(--ink-3);
+        line-height: 1.55;
+      }
+      .budget-card {
+        background: linear-gradient(135deg, var(--coral), var(--coral-3));
+        color: #fff;
+        border-radius: var(--r-lg);
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 12px;
+      }
+      .budget-amount {
+        font-family: "Fraunces", serif;
+        font-size: 2.4rem;
+        font-weight: 600;
+      }
+      .budget-label {
+        font-size: 0.8rem;
+        opacity: 0.85;
+        margin-top: 2px;
+      }
+
+      /* CHAT */
+      .chat-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        max-width: 1100px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+        gap: 14px;
+        flex: 1;
+        align-items: start;
+      }
+      .chat-panel {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+        position: sticky;
+        top: 78px;
+      }
+      .chat-panel-head {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .chat-panel-head h3 {
+        font-size: 0.95rem;
+        font-weight: 500;
+      }
+      .chat-search {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .chat-search input {
+        background: var(--sand);
+        border-color: transparent;
+        font-size: 0.85rem;
+        padding: 0.5rem 0.8rem;
+      }
+      .chat-search input:focus {
+        background: var(--white);
+        border-color: var(--coral);
+      }
+      .chat-list {
+        overflow-y: auto;
+        max-height: calc(100vh - 250px);
+      }
+      .chat-list-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 14px;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        transition: background 0.12s;
+      }
+      .chat-list-item:hover,
+      .chat-list-item.active {
+        background: var(--sand);
+      }
+      .chat-list-item:last-child {
+        border-bottom: none;
+      }
+      .online-dot {
+        position: absolute;
+        bottom: 1px;
+        right: 1px;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        border: 1.5px solid var(--white);
+      }
+      .online {
+        background: #22c55e;
+      }
+      .offline {
+        background: #94a3b8;
+      }
+      .rel-avatar {
+        position: relative;
+        flex-shrink: 0;
+      }
+      .cli-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .cli-name {
+        font-size: 0.87rem;
+        font-weight: 500;
+        color: var(--ink);
+      }
+      .cli-preview {
+        font-size: 0.77rem;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .cli-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        flex-shrink: 0;
+      }
+      .cli-time {
+        font-size: 0.7rem;
+        color: var(--muted);
+      }
+      .chat-window {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        display: flex;
+        flex-direction: column;
+        position: sticky;
+        top: 78px;
+        height: calc(100vh - 118px);
+        overflow: hidden;
+      }
+      .chat-win-head {
+        padding: 13px 18px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        flex-shrink: 0;
+      }
+      .chat-win-info {
+        flex: 1;
+      }
+      .chat-win-name {
+        font-size: 0.95rem;
+        font-weight: 500;
+      }
+      .chat-win-status {
+        font-size: 0.76rem;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 1px;
+      }
+      .chat-context-bar {
+        background: var(--sand);
+        border-bottom: 1px solid var(--border);
+        padding: 8px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: var(--ink-3);
+        flex-shrink: 0;
+      }
+      .chat-context-bar a {
+        color: var(--coral);
+        font-weight: 500;
+        cursor: pointer;
+      }
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        background: var(--cream);
+      }
+      .day-sep {
+        text-align: center;
+        font-size: 0.74rem;
+        color: var(--muted);
+        position: relative;
+      }
+      .day-sep::before,
+      .day-sep::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        height: 1px;
+        background: var(--border);
+        width: 35%;
+      }
+      .day-sep::before {
+        left: 0;
+      }
+      .day-sep::after {
+        right: 0;
+      }
+      .msg-row {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+      }
+      .msg-row.mine {
+        flex-direction: row-reverse;
+      }
+      .msg-bubble {
+        max-width: 72%;
+        padding: 0.7rem 1rem;
+        border-radius: 14px;
+        font-size: 0.88rem;
+        line-height: 1.6;
+        word-break: break-word;
+      }
+      .msg-row:not(.mine) .msg-bubble {
+        background: var(--white);
+        color: var(--ink);
+        border: 1px solid var(--border);
+        border-bottom-left-radius: 3px;
+      }
+      .msg-row.mine .msg-bubble {
+        background: var(--coral);
+        color: #fff;
+        border-bottom-right-radius: 3px;
+      }
+      .msg-time {
+        font-size: 0.68rem;
+        color: var(--muted);
+        flex-shrink: 0;
+        margin-bottom: 2px;
+      }
+      .msg-row.mine .msg-time {
+        order: -1;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.4;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      .typing-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--muted);
+        animation: pulse 1.2s infinite;
+      }
+      .typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+      .chat-input-area {
+        padding: 12px 16px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        gap: 9px;
+        align-items: flex-end;
+        flex-shrink: 0;
+        background: var(--white);
+      }
+      .chat-input-wrap {
+        flex: 1;
+        background: var(--sand);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        display: flex;
+        align-items: flex-end;
+        padding: 0.5rem 0.75rem;
+        gap: 7px;
+        transition: border-color 0.15s;
+      }
+      .chat-input-wrap:focus-within {
+        border-color: var(--coral);
+        background: var(--white);
+      }
+      .chat-input-wrap textarea {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        font-size: 0.9rem;
+        color: var(--ink);
+        resize: none;
+        max-height: 120px;
+        min-height: 22px;
+        line-height: 1.5;
+        padding: 0;
+      }
+      .icon-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        border: none;
+        background: none;
+        color: var(--muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.12s;
+      }
+      .icon-btn:hover {
+        background: var(--sand-2);
+        color: var(--ink);
+      }
+      .send-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: var(--coral);
+        border: none;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s;
+        flex-shrink: 0;
+      }
+      .send-btn:hover {
+        background: var(--coral-2);
+        transform: scale(1.05);
+      }
+
+      /* MY REQUESTS */
+      .myrequests-layout {
+        max-width: 780px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 24px 20px;
+        flex: 1;
+      }
+      .status-tabs {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+      }
+      .status-tab {
+        padding: 0.6rem 1.1rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.15s;
+      }
+      .status-tab:hover,
+      .status-tab.active {
+        color: var(--ink);
+        border-bottom-color: var(--coral);
+      }
+      .req-manage-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 18px;
+        margin-bottom: 10px;
+        transition: box-shadow 0.15s;
+      }
+      .req-manage-card:hover {
+        box-shadow: var(--shadow);
+      }
+      .req-manage-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+      .req-manage-route {
+        font-family: "Fraunces", serif;
+        font-size: 1.05rem;
+        font-weight: 400;
+      }
+      .req-manage-meta {
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-bottom: 10px;
+      }
+      .req-manage-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .req-manage-stats {
+        display: flex;
+        gap: 14px;
+      }
+      .req-manage-stat {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      /* SETTINGS */
+      .settings-layout {
+        display: grid;
+        grid-template-columns: 210px 1fr;
+        gap: 20px;
+        max-width: 900px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 24px 20px;
+        flex: 1;
+        align-items: start;
+      }
+      .settings-nav {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+        position: sticky;
+        top: 78px;
+      }
+      .settings-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 11px 14px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--muted);
+        cursor: pointer;
+        border-bottom: 1px solid var(--border);
+        transition: all 0.12s;
+      }
+      .settings-nav-item:last-child {
+        border-bottom: none;
+      }
+      .settings-nav-item:hover,
+      .settings-nav-item.active {
+        background: var(--sand);
+        color: var(--ink);
+      }
+      .settings-nav-item.active {
+        color: var(--coral);
+      }
+      .settings-nav-item.danger {
+        color: var(--red);
+      }
+      .settings-nav-item.danger:hover {
+        background: var(--red-bg);
+      }
+      .settings-content {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .settings-section {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 20px;
+      }
+      .settings-section-title {
+        font-size: 0.95rem;
+        font-weight: 500;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 16px;
+      }
+      .settings-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .settings-row:last-child {
+        border-bottom: none;
+      }
+      .settings-row-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+      .settings-row-desc {
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .toggle {
+        width: 38px;
+        height: 21px;
+        border-radius: 11px;
+        background: var(--border);
+        position: relative;
+        cursor: pointer;
+        transition: background 0.2s;
+        flex-shrink: 0;
+      }
+      .toggle.on {
+        background: var(--coral);
+      }
+      .toggle::after {
+        content: "";
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #fff;
+        top: 3px;
+        left: 3px;
+        transition: transform 0.2s;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+      }
+      .toggle.on::after {
+        transform: translateX(17px);
+      }
+
+      /* MODAL */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(28, 23, 20, 0.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 500;
+        padding: 20px;
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+      .modal {
+        background: var(--white);
+        border-radius: var(--r-xl);
+        padding: 28px;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: var(--shadow-lg);
+        animation: fadeIn 0.2s ease;
+      }
+      .modal-title {
+        font-family: "Fraunces", serif;
+        font-size: 1.2rem;
+        font-weight: 400;
+        margin-bottom: 6px;
+      }
+      .modal-sub {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-bottom: 22px;
+      }
+      .modal-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 20px;
+      }
+
+      /* TOAST */
+      #toast-container {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .toast {
+        background: var(--ink);
+        color: #fff;
+        padding: 0.75rem 1.1rem;
+        border-radius: var(--r);
+        font-size: 0.85rem;
+        box-shadow: var(--shadow-lg);
+        animation: toastIn 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        max-width: 320px;
+      }
+      .toast.success {
+        background: var(--green);
+      }
+      .toast.error {
+        background: var(--red);
+      }
+      @keyframes toastIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .toast-out {
+        animation: toastOut 0.3s ease forwards;
+      }
+      @keyframes toastOut {
+        to {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+      }
+
+      /* EMPTY */
+      .empty {
+        text-align: center;
+        padding: 48px 20px;
+        color: var(--muted);
+      }
+      .empty-icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+        opacity: 0.5;
+      }
+      .empty h3 {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--ink-3);
+        margin-bottom: 6px;
+      }
+      .empty p {
+        font-size: 0.875rem;
+        line-height: 1.6;
+      }
+
+      /* RESPONSIVE */
+      @media (max-width: 900px) {
+        .auth-wrap {
+          grid-template-columns: 1fr;
+          max-width: 440px;
+        }
+        .auth-hero {
+          display: none;
+        }
+        .home-layout {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          display: none;
+        }
+        .view-layout {
+          grid-template-columns: 1fr;
+        }
+        .view-sidebar {
+          display: none;
+        }
+        .chat-layout {
+          grid-template-columns: 1fr;
+        }
+        .chat-panel {
+          display: none;
+        }
+        .settings-layout {
+          grid-template-columns: 1fr;
+        }
+        .settings-nav {
+          display: none;
+        }
+        .field-row.cols-3 {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 600px) {
+        .field-row.cols-2,
+        .field-row.cols-3 {
+          grid-template-columns: 1fr;
+        }
+        nav {
+          padding: 0 14px;
+        }
+        .nav-links {
+          gap: 0;
+        }
+        .nav-links li a {
+          padding: 0 8px;
+          font-size: 0.78rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="toast-container"></div>
+
+    <!-- ACCEPT MODAL -->
+    <div id="modal-accept" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-title">Accept this delivery request?</div>
+        <div class="modal-sub">
+          You'll be matched with the sender and a private chat will open. Make
+          sure your travel dates align.
+        </div>
+        <div
+          class="card card-sm"
+          style="
+            background: var(--sand);
+            border-color: var(--border-2);
+            margin-bottom: 4px;
+          "
+        >
+          <div
+            id="modal-accept-info"
+            style="font-size: 0.875rem; color: var(--ink-3); line-height: 1.6"
+          ></div>
+        </div>
+        <div class="modal-actions">
+          <button
+            class="btn btn-secondary"
+            onclick="closeModal('modal-accept')"
+          >
+            Cancel
+          </button>
+          <button
+            class="btn btn-primary"
+            id="confirm-accept-btn"
+            onclick="confirmAccept()"
+          >
+            Yes, accept request
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE 1 — AUTH ════ -->
+    <div id="page-auth" class="page active">
+      <div class="auth-wrap">
+        <div class="auth-hero">
+          <div class="auth-hero-badge">
+            <span></span> Live — connect with real travelers worldwide
+          </div>
+          <h1>Send your package<br />through <em>real travelers</em></h1>
+          <p>
+            PackRoute connects senders with travelers headed the same way.
+            Faster, cheaper, and more personal than traditional couriers.
+          </p>
+          <div class="auth-stats">
+            <div class="auth-stat">
+              <strong>12k+</strong><span>Active travelers</span>
+            </div>
+            <div class="auth-stat">
+              <strong>48k+</strong><span>Packages delivered</span>
+            </div>
+            <div class="auth-stat">
+              <strong>190</strong><span>Countries</span>
+            </div>
+          </div>
+        </div>
+        <div class="auth-card">
+          <div style="text-align: center; margin-bottom: 22px">
+            <div
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 12px;
+              "
+            >
+              <div class="nav-logo-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 3L20 8.5V15.5L12 21L4 15.5V8.5L12 3Z"
+                    stroke="white"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+              <span
+                style="
+                  font-family: &quot;Fraunces&quot;, serif;
+                  font-size: 1.3rem;
+                  font-weight: 600;
+                "
+                >PackRoute</span
+              >
+            </div>
+          </div>
+          <div class="auth-tabs">
+            <button
+              class="auth-tab active"
+              id="tab-login"
+              onclick="switchTab('login')"
+            >
+              Sign in
+            </button>
+            <button
+              class="auth-tab"
+              id="tab-signup"
+              onclick="switchTab('signup')"
+            >
+              Create account
+            </button>
+          </div>
+
+          <!-- LOGIN -->
+          <div id="form-login" class="auth-form">
+            <div id="login-err" class="auth-err"></div>
+            <div class="field">
+              <label>Email</label
+              ><input
+                type="email"
+                id="login-email"
+                placeholder="you@email.com"
+              />
+            </div>
+            <div class="field">
+              <label>Password</label
+              ><input
+                type="password"
+                id="login-pass"
+                placeholder="••••••••"
+                onkeydown="if (event.key === 'Enter') doLogin();"
+              />
+            </div>
+            <button
+              class="btn btn-primary btn-lg btn-block"
+              id="login-btn"
+              onclick="doLogin()"
+            >
+              Sign in →
+            </button>
+            <p class="auth-footer">
+              No account? <a onclick="switchTab('signup')">Create one free</a>
+            </p>
+          </div>
+
+          <!-- SIGNUP -->
+          <div id="form-signup" class="auth-form" style="display: none">
+            <div id="signup-err" class="auth-err"></div>
+            <div class="field-row cols-2">
+              <div class="field">
+                <label>First name</label
+                ><input type="text" id="sig-first" placeholder="Alex" />
+              </div>
+              <div class="field">
+                <label>Last name</label
+                ><input type="text" id="sig-last" placeholder="Morgan" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Email</label
+              ><input type="email" id="sig-email" placeholder="you@email.com" />
+            </div>
+            <div class="field">
+              <label>Password</label
+              ><input
+                type="password"
+                id="sig-pass"
+                placeholder="At least 8 characters"
+                onkeydown="if (event.key === 'Enter') doSignup();"
+              />
+            </div>
+            <div class="field">
+              <label>I primarily want to</label>
+              <select id="sig-role">
+                <option value="both">Both send & carry packages</option>
+                <option value="sender">Send packages</option>
+                <option value="traveler">Carry packages as a traveler</option>
+              </select>
+            </div>
+            <button
+              class="btn btn-primary btn-lg btn-block"
+              id="signup-btn"
+              onclick="doSignup()"
+            >
+              Create account →
+            </button>
+            <p
+              style="
+                font-size: 0.75rem;
+                color: var(--muted);
+                text-align: center;
+              "
+            >
+              By signing up you agree to our
+              <a style="color: var(--coral)">Terms</a> &
+              <a style="color: var(--coral)">Privacy Policy</a>
+            </p>
+            <p class="auth-footer">
+              Have an account? <a onclick="switchTab('login')">Sign in</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE 2 — HOME ════ -->
+    <div id="page-home" class="page">
+      <nav>
+        <div class="nav-logo" onclick="goTo('home')">
+          <div class="nav-logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 3L20 8.5V15.5L12 21L4 15.5V8.5L12 3Z"
+                stroke="white"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <span class="nav-logo-text">PackRoute</span>
+        </div>
+        <ul class="nav-links">
+          <li><a class="active" onclick="goTo('home')">🏠 Home</a></li>
+          <li><a onclick="goTo('myrequests')">📦 My Requests</a></li>
+          <li><a onclick="goTo('chat')">💬 Messages</a></li>
+          <li><a onclick="goTo('settings')">⚙️ Settings</a></li>
+        </ul>
+        <div class="nav-right">
+          <button class="btn btn-primary btn-sm" onclick="goTo('post')">
+            + Post Request
+          </button>
+          <div class="avatar" id="nav-avatar-home" onclick="goTo('settings')">
+            ?
+          </div>
+        </div>
+      </nav>
+      <div class="home-layout">
+        <main>
+          <div class="feed-top">
+            <h2>Delivery Requests</h2>
+            <div class="feed-filters">
+              <button
+                class="filter-btn active"
+                onclick="filterFeed(this, 'all')"
+              >
+                All
+              </button>
+              <button class="filter-btn" onclick="filterFeed(this, 'urgent')">
+                Urgent
+              </button>
+              <button class="filter-btn" onclick="filterFeed(this, 'open')">
+                Open
+              </button>
+              <button class="filter-btn" onclick="filterFeed(this, 'light')">
+                Light (&lt;1kg)
+              </button>
+            </div>
+          </div>
+          <div id="feed-container"></div>
+        </main>
+        <aside class="sidebar">
+          <div>
+            <div class="sidebar-section-label">I'm traveling this route</div>
+            <div class="route-finder">
+              <div class="route-input-row">
+                <input
+                  type="text"
+                  id="route-from"
+                  placeholder="From city"
+                  style="font-size: 0.85rem; padding: 0.55rem 0.75rem"
+                />
+                <div class="route-sep">→</div>
+                <input
+                  type="text"
+                  id="route-to"
+                  placeholder="To city"
+                  style="font-size: 0.85rem; padding: 0.55rem 0.75rem"
+                />
+              </div>
+              <button
+                class="btn btn-primary btn-block btn-sm"
+                onclick="findMatches()"
+              >
+                Find matching requests
+              </button>
+            </div>
+          </div>
+          <div>
+            <div class="sidebar-section-label">Active chats</div>
+            <div class="chat-preview" id="sidebar-chats-preview"></div>
+          </div>
+          <div
+            class="card"
+            style="
+              background: linear-gradient(135deg, #fef4f0, #faece7);
+              border-color: #f0c4b0;
+            "
+          >
+            <div
+              style="
+                font-size: 0.85rem;
+                font-weight: 500;
+                color: var(--coral-2);
+                margin-bottom: 6px;
+              "
+            >
+              ✨ Upgrade to Pro
+            </div>
+            <p
+              style="
+                font-size: 0.82rem;
+                color: var(--ink-3);
+                line-height: 1.55;
+                margin-bottom: 12px;
+              "
+            >
+              Priority feed placement, verified badge, and escrow protection on
+              every delivery.
+            </p>
+            <button
+              class="btn btn-primary btn-sm btn-block"
+              onclick="toast('Pro plan coming soon!')"
+            >
+              Upgrade — $9/mo
+            </button>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ════ PAGE 3 — POST REQUEST ════ -->
+    <div id="page-post" class="page">
+      <nav>
+        <div class="nav-logo" onclick="goTo('home')">
+          <div class="nav-logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 3L20 8.5V15.5L12 21L4 15.5V8.5L12 3Z"
+                stroke="white"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <span class="nav-logo-text">PackRoute</span>
+        </div>
+        <ul class="nav-links">
+          <li><a onclick="goTo('home')">🏠 Home</a></li>
+          <li><a onclick="goTo('myrequests')">📦 My Requests</a></li>
+          <li><a onclick="goTo('chat')">💬 Messages</a></li>
+          <li><a onclick="goTo('settings')">⚙️ Settings</a></li>
+        </ul>
+        <div class="nav-right">
+          <div class="avatar" id="nav-avatar-post" onclick="goTo('settings')">
+            ?
+          </div>
+        </div>
+      </nav>
+      <div class="post-layout">
+        <div class="page-header">
+          <button class="back-btn" onclick="goTo('home')">←</button>
+          <div>
+            <h1>Post a delivery request</h1>
+            <p>Travelers on this route will see your listing in the feed</p>
+          </div>
+        </div>
+        <div
+          class="card"
+          style="display: flex; flex-direction: column; gap: 20px"
+        >
+          <div class="form-section">
+            <div class="form-section-title">Route</div>
+            <div class="field-row cols-2">
+              <div class="field">
+                <label>Pickup city *</label
+                ><input type="text" id="p-from" placeholder="e.g. New York" />
+              </div>
+              <div class="field">
+                <label>Drop-off city *</label
+                ><input type="text" id="p-to" placeholder="e.g. London" />
+              </div>
+            </div>
+            <div class="field-row cols-2" style="margin-top: 12px">
+              <div class="field">
+                <label>Pickup address</label
+                ><input
+                  type="text"
+                  id="p-from-addr"
+                  placeholder="Street, area or landmark"
+                />
+              </div>
+              <div class="field">
+                <label>Drop-off address</label
+                ><input
+                  type="text"
+                  id="p-to-addr"
+                  placeholder="Street, area or landmark"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">Package details</div>
+            <div class="field-row cols-3">
+              <div class="field">
+                <label>Category *</label>
+                <select id="p-cat">
+                  <option>Electronics</option>
+                  <option>Documents</option>
+                  <option>Clothing</option>
+                  <option>Food / Gifts</option>
+                  <option>Medicine</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Weight (kg) *</label
+                ><input
+                  type="number"
+                  id="p-weight"
+                  placeholder="e.g. 0.8"
+                  min="0.1"
+                  max="30"
+                  step="0.1"
+                />
+              </div>
+              <div class="field">
+                <label>Size</label>
+                <select id="p-size">
+                  <option>Envelope</option>
+                  <option>Small box</option>
+                  <option>Medium box</option>
+                  <option>Large box</option>
+                </select>
+              </div>
+            </div>
+            <div class="field" style="margin-top: 12px">
+              <label>Description & special instructions *</label>
+              <textarea
+                id="p-desc"
+                placeholder="Describe the item and any special handling instructions. Be honest — travelers will ask!"
+              ></textarea>
+            </div>
+            <div style="margin-top: 12px">
+              <div class="label" style="margin-bottom: 8px">Tags</div>
+              <div class="tag-chips">
+                <span class="tag-chip" onclick="this.classList.toggle('sel')"
+                  >Fragile</span
+                >
+                <span class="tag-chip" onclick="this.classList.toggle('sel')"
+                  >Keep upright</span
+                >
+                <span class="tag-chip" onclick="this.classList.toggle('sel')"
+                  >No X-ray</span
+                >
+                <span class="tag-chip" onclick="this.classList.toggle('sel')"
+                  >Sealed box</span
+                >
+                <span class="tag-chip" onclick="this.classList.toggle('sel')"
+                  >Food inside</span
+                >
+                <span class="tag-chip" onclick="this.classList.toggle('sel')"
+                  >Original packaging</span
+                >
+              </div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">Compensation & deadline</div>
+            <div class="field-row cols-2">
+              <div class="field">
+                <label>Reward for traveler (USD) *</label>
+                <div class="prefix-input" data-prefix="$">
+                  <input
+                    type="number"
+                    id="p-reward"
+                    placeholder="40"
+                    min="5"
+                    max="999"
+                  />
+                </div>
+              </div>
+              <div class="field">
+                <label>Needed by *</label><input type="date" id="p-deadline" />
+              </div>
+            </div>
+            <div class="field-row cols-2" style="margin-top: 12px">
+              <div class="field">
+                <label>Handoff preference</label>
+                <select id="p-handoff">
+                  <option>At airport — I'll meet you</option>
+                  <option>Pickup from home</option>
+                  <option>Flexible</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Visibility</label>
+                <select id="p-vis">
+                  <option value="public">Public feed</option>
+                  <option value="private">Private — invite only</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: flex-end;
+              gap: 9px;
+              padding-top: 4px;
+              border-top: 1px solid var(--border);
+            "
+          >
+            <button class="btn btn-ghost" onclick="goTo('home')">Cancel</button>
+            <button
+              class="btn btn-primary"
+              id="publish-btn"
+              onclick="publishRequest()"
+            >
+              Publish request →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE 4 — VIEW REQUEST ════ -->
+    <div id="page-view" class="page">
+      <nav>
+        <div class="nav-logo" onclick="goTo('home')">
+          <div class="nav-logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 3L20 8.5V15.5L12 21L4 15.5V8.5L12 3Z"
+                stroke="white"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <span class="nav-logo-text">PackRoute</span>
+        </div>
+        <ul class="nav-links">
+          <li><a onclick="goTo('home')">🏠 Home</a></li>
+          <li><a onclick="goTo('myrequests')">📦 My Requests</a></li>
+          <li><a onclick="goTo('chat')">💬 Messages</a></li>
+          <li><a onclick="goTo('settings')">⚙️ Settings</a></li>
+        </ul>
+        <div class="nav-right">
+          <div class="avatar" id="nav-avatar-view" onclick="goTo('settings')">
+            ?
+          </div>
+        </div>
+      </nav>
+      <div class="view-layout">
+        <main class="view-main" id="view-main-content"></main>
+        <aside class="view-sidebar" id="view-sidebar-content"></aside>
+      </div>
+    </div>
+
+    <!-- ════ PAGE 5 — CHAT ════ -->
+    <div id="page-chat" class="page">
+      <nav>
+        <div class="nav-logo" onclick="goTo('home')">
+          <div class="nav-logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 3L20 8.5V15.5L12 21L4 15.5V8.5L12 3Z"
+                stroke="white"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <span class="nav-logo-text">PackRoute</span>
+        </div>
+        <ul class="nav-links">
+          <li><a onclick="goTo('home')">🏠 Home</a></li>
+          <li><a onclick="goTo('myrequests')">📦 My Requests</a></li>
+          <li><a class="active" onclick="goTo('chat')">💬 Messages</a></li>
+          <li><a onclick="goTo('settings')">⚙️ Settings</a></li>
+        </ul>
+        <div class="nav-right">
+          <div class="avatar" id="nav-avatar-chat" onclick="goTo('settings')">
+            ?
+          </div>
+        </div>
+      </nav>
+      <div class="chat-layout">
+        <div class="chat-panel">
+          <div class="chat-panel-head"><h3>Messages</h3></div>
+          <div class="chat-search">
+            <input
+              type="text"
+              placeholder="Search conversations…"
+              oninput="filterChats(this.value)"
+            />
+          </div>
+          <div class="chat-list" id="chat-list-panel"></div>
+        </div>
+        <div class="chat-window" id="chat-window">
+          <div
+            id="chat-empty-state"
+            style="
+              flex: 1;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <div class="empty">
+              <div class="empty-icon">💬</div>
+              <h3>No conversation selected</h3>
+              <p>
+                Select a conversation from the left or accept a delivery request
+                to start chatting.
+              </p>
+            </div>
+          </div>
+          <div
+            id="chat-active"
+            style="
+              display: none;
+              flex-direction: column;
+              flex: 1;
+              overflow: hidden;
+            "
+          >
+            <div class="chat-win-head" id="chat-win-head">
+              <div class="rel-avatar">
+                <div
+                  class="avatar"
+                  id="chat-peer-avatar"
+                  style="background: #185fa5"
+                >
+                  ?
+                </div>
+              </div>
+              <div class="chat-win-info">
+                <div class="chat-win-name" id="chat-peer-name">-</div>
+                <div class="chat-win-status">
+                  <span id="chat-peer-status">-</span>
+                </div>
+              </div>
+              <button
+                class="btn btn-secondary btn-sm"
+                onclick="viewCurrentRequest()"
+              >
+                View request ↗
+              </button>
+            </div>
+            <div class="chat-context-bar" id="chat-context-bar">
+              <span
+                >📦 Re: <strong id="chat-route-label">-</strong> · $<span
+                  id="chat-reward-label"
+                  >-</span
+                >
+                reward</span
+              >
+              <a onclick="viewCurrentRequest()">View full request →</a>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input-area">
+              <div class="chat-input-wrap">
+                <textarea
+                  id="chat-input"
+                  placeholder="Type a message…"
+                  rows="1"
+                  oninput="
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+                  "
+                  onkeydown="
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault();
+                      sendMessage();
+                    }
+                  "
+                ></textarea>
+              </div>
+              <button class="send-btn" onclick="sendMessage()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                  <path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE 6 — MY REQUESTS ════ -->
+    <div id="page-myrequests" class="page">
+      <nav>
+        <div class="nav-logo" onclick="goTo('home')">
+          <div class="nav-logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 3L20 8.5V15.5L12 21L4 15.5V8.5L12 3Z"
+                stroke="white"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <span class="nav-logo-text">PackRoute</span>
+        </div>
+        <ul class="nav-links">
+          <li><a onclick="goTo('home')">🏠 Home</a></li>
+          <li>
+            <a class="active" onclick="goTo('myrequests')">📦 My Requests</a>
+          </li>
+          <li><a onclick="goTo('chat')">💬 Messages</a></li>
+          <li><a onclick="goTo('settings')">⚙️ Settings</a></li>
+        </ul>
+        <div class="nav-right">
+          <button class="btn btn-primary btn-sm" onclick="goTo('post')">
+            + New Request
+          </button>
+          <div
+            class="avatar"
+            id="nav-avatar-myrequests"
+            onclick="goTo('settings')"
+          >
+            ?
+          </div>
+        </div>
+      </nav>
+      <div class="myrequests-layout">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+          "
+        >
+          <h2
+            style="
+              font-family: &quot;Fraunces&quot;, serif;
+              font-size: 1.4rem;
+              font-weight: 400;
+            "
+          >
+            My Requests
+          </h2>
+        </div>
+        <div class="status-tabs" id="myr-tabs">
+          <div class="status-tab active" onclick="switchMyTab(this, 'all')">
+            All
+          </div>
+          <div class="status-tab" onclick="switchMyTab(this, 'open')">Open</div>
+          <div class="status-tab" onclick="switchMyTab(this, 'matched')">
+            Matched
+          </div>
+          <div class="status-tab" onclick="switchMyTab(this, 'closed')">
+            Closed
+          </div>
+        </div>
+        <div id="myr-list"></div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE 7 — SETTINGS ════ -->
+    <div id="page-settings" class="page">
+      <nav>
+        <div class="nav-logo" onclick="goTo('home')">
+          <div class="nav-logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 3L20 8.5V15.5L12 21L4 15.5V8.5L12 3Z"
+                stroke="white"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <span class="nav-logo-text">PackRoute</span>
+        </div>
+        <ul class="nav-links">
+          <li><a onclick="goTo('home')">🏠 Home</a></li>
+          <li><a onclick="goTo('myrequests')">📦 My Requests</a></li>
+          <li><a onclick="goTo('chat')">💬 Messages</a></li>
+          <li><a class="active" onclick="goTo('settings')">⚙️ Settings</a></li>
+        </ul>
+        <div class="nav-right">
+          <div
+            class="avatar"
+            id="nav-avatar-settings"
+            onclick="goTo('settings')"
+          >
+            ?
+          </div>
+        </div>
+      </nav>
+      <div class="settings-layout">
+        <div class="settings-nav">
+          <div
+            class="settings-nav-item active"
+            onclick="settingsSection(this, 'profile')"
+          >
+            👤 Profile
+          </div>
+          <div
+            class="settings-nav-item"
+            onclick="settingsSection(this, 'notifications')"
+          >
+            🔔 Notifications
+          </div>
+          <div
+            class="settings-nav-item"
+            onclick="settingsSection(this, 'privacy')"
+          >
+            🔒 Privacy
+          </div>
+          <div
+            class="settings-nav-item"
+            onclick="settingsSection(this, 'payments')"
+          >
+            💳 Payments
+          </div>
+          <div
+            class="settings-nav-item"
+            onclick="settingsSection(this, 'security')"
+          >
+            🛡 Security
+          </div>
+          <div class="settings-nav-item danger" onclick="doLogout()">
+            🚪 Sign out
+          </div>
+        </div>
+        <div class="settings-content">
+          <div id="settings-profile" class="settings-section">
+            <div class="settings-section-title">Profile Information</div>
+            <div
+              style="
+                display: flex;
+                gap: 16px;
+                align-items: flex-start;
+                margin-bottom: 18px;
+              "
+            >
+              <div
+                class="avatar"
+                id="settings-avatar"
+                style="
+                  width: 56px;
+                  height: 56px;
+                  font-size: 1.1rem;
+                  border-radius: 50%;
+                "
+              >
+                ?
+              </div>
+              <div>
+                <p
+                  style="
+                    font-size: 0.76rem;
+                    color: var(--muted);
+                    margin-top: 5px;
+                  "
+                >
+                  Your initials are shown as your avatar
+                </p>
+              </div>
+            </div>
+            <div class="field-row cols-2" style="margin-bottom: 12px">
+              <div class="field">
+                <label>First name</label
+                ><input type="text" id="set-first" value="" />
+              </div>
+              <div class="field">
+                <label>Last name</label
+                ><input type="text" id="set-last" value="" />
+              </div>
+            </div>
+            <div class="field" style="margin-bottom: 12px">
+              <label>Email</label
+              ><input
+                type="email"
+                id="set-email"
+                value=""
+                disabled
+                style="opacity: 0.6; cursor: not-allowed"
+              />
+            </div>
+            <div class="field" style="margin-bottom: 12px">
+              <label>Phone (for delivery notifications)</label
+              ><input
+                type="text"
+                id="set-phone"
+                placeholder="+1 (555) 000-0000"
+              />
+            </div>
+            <div class="field" style="margin-bottom: 16px">
+              <label>Bio</label
+              ><textarea
+                id="set-bio"
+                rows="3"
+                placeholder="Tell travelers a bit about yourself…"
+              ></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end">
+              <button
+                class="btn btn-primary"
+                id="save-profile-btn"
+                onclick="saveProfile()"
+              >
+                Save changes
+              </button>
+            </div>
+          </div>
+          <div
+            id="settings-notifications"
+            class="settings-section"
+            style="display: none"
+          >
+            <div class="settings-section-title">Notification Preferences</div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">
+                  New proposal on your request
+                </div>
+                <div class="settings-row-desc">
+                  When a traveler accepts your delivery request
+                </div>
+              </div>
+              <div
+                class="toggle on"
+                onclick="this.classList.toggle('on')"
+              ></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Chat messages</div>
+                <div class="settings-row-desc">
+                  Direct messages from matched travelers or senders
+                </div>
+              </div>
+              <div
+                class="toggle on"
+                onclick="this.classList.toggle('on')"
+              ></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Delivery confirmed</div>
+                <div class="settings-row-desc">
+                  When a delivery is marked as completed
+                </div>
+              </div>
+              <div
+                class="toggle on"
+                onclick="this.classList.toggle('on')"
+              ></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">New matching requests</div>
+                <div class="settings-row-desc">
+                  Requests that match routes you've traveled before
+                </div>
+              </div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Weekly digest</div>
+                <div class="settings-row-desc">
+                  Summary of active requests on your routes
+                </div>
+              </div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div
+            id="settings-privacy"
+            class="settings-section"
+            style="display: none"
+          >
+            <div class="settings-section-title">Privacy & Safety</div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">
+                  Show my full name on requests
+                </div>
+                <div class="settings-row-desc">
+                  Otherwise only your first name is shown
+                </div>
+              </div>
+              <div
+                class="toggle on"
+                onclick="this.classList.toggle('on')"
+              ></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">
+                  Show travel history publicly
+                </div>
+                <div class="settings-row-desc">
+                  Helps travelers trust you as a sender
+                </div>
+              </div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">
+                  Allow direct messages from anyone
+                </div>
+                <div class="settings-row-desc">
+                  If off, only matched users can message you
+                </div>
+              </div>
+              <div
+                class="toggle on"
+                onclick="this.classList.toggle('on')"
+              ></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">
+                  Share location for route matching
+                </div>
+                <div class="settings-row-desc">
+                  We use your general city, never exact address
+                </div>
+              </div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div
+            id="settings-payments"
+            class="settings-section"
+            style="display: none"
+          >
+            <div class="settings-section-title">Payment Methods</div>
+            <p
+              style="
+                font-size: 0.85rem;
+                color: var(--muted);
+                margin-bottom: 12px;
+              "
+            >
+              Payment integration (Stripe) can be added. For now, coordinate
+              payments directly with the sender/traveler.
+            </p>
+            <button
+              class="btn btn-secondary btn-sm"
+              onclick="toast('Stripe integration coming soon')"
+            >
+              + Add payment method
+            </button>
+          </div>
+          <div
+            id="settings-security"
+            class="settings-section"
+            style="display: none"
+          >
+            <div class="settings-section-title">Change Password</div>
+            <div
+              id="pass-err"
+              class="auth-err"
+              style="margin-bottom: 12px"
+            ></div>
+            <div class="field" style="margin-bottom: 12px">
+              <label>Current password</label
+              ><input type="password" id="cur-pass" placeholder="••••••••" />
+            </div>
+            <div class="field" style="margin-bottom: 12px">
+              <label>New password</label
+              ><input type="password" id="new-pass" placeholder="••••••••" />
+            </div>
+            <div class="field" style="margin-bottom: 16px">
+              <label>Confirm new password</label
+              ><input type="password" id="conf-pass" placeholder="••••••••" />
+            </div>
+            <div style="display: flex; justify-content: flex-end">
+              <button
+                class="btn btn-primary"
+                id="change-pass-btn"
+                onclick="changePassword()"
+              >
+                Update password
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ══════════════════════════════
+      // CONFIG
+      // ══════════════════════════════
+      const API = ""; // same origin — server serves index.html
+
+      // ══════════════════════════════
+      // STATE
+      // ══════════════════════════════
+      let currentUser = null;
+      let authToken = localStorage.getItem("pr_token") || null;
+      let activeConvoId = null;
+      let activeConvo = null;
+      let currentFilter = "all";
+      let currentViewReqId = null;
+      let pollInterval = null;
+
+      // ══════════════════════════════
+      // UTILS
+      // ══════════════════════════════
+      const COLORS = [
+        "#DA7756",
+        "#185FA5",
+        "#3B6D11",
+        "#6B4FA8",
+        "#B0720B",
+        "#C44369",
+        "#1A7A7A",
+      ];
+      function rndColor(s) {
+        let h = 0;
+        for (let c of s) h = (Math.imul(31, h) + c.charCodeAt(0)) | 0;
+        return COLORS[Math.abs(h) % COLORS.length];
+      }
+      function initials(n) {
+        return (n || "?")
+          .split(" ")
+          .map((w) => w[0])
+          .join("")
+          .toUpperCase()
+          .slice(0, 2);
+      }
+      function $(id) {
+        return document.getElementById(id);
+      }
+      function timeAgo(d) {
+        const diff = (Date.now() - new Date(d)) / 1000;
+        if (diff < 60) return "Just now";
+        if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+        if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+        return Math.floor(diff / 86400) + "d ago";
+      }
+      function fmtTime(iso) {
+        return new Date(iso).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+      function svgArrow() {
+        return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="color:var(--coral);flex-shrink:0;"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      }
+      function closeModal(id) {
+        $(id).classList.remove("open");
+      }
+
+      function toast(msg, type = "info") {
+        const c = $("toast-container");
+        const t = document.createElement("div");
+        t.className = `toast ${type === "success" ? "success" : type === "error" ? "error" : ""}`;
+        const icon = type === "success" ? "✓" : type === "error" ? "✕" : "ℹ";
+        t.innerHTML = `<span style="font-size:.9rem;">${icon}</span>${msg}`;
+        c.appendChild(t);
+        setTimeout(() => {
+          t.classList.add("toast-out");
+          setTimeout(() => t.remove(), 300);
+        }, 3200);
+      }
+
+      function setLoading(btnId, loading, text = "") {
+        const btn = $(btnId);
+        if (!btn) return;
+        btn.disabled = loading;
+        if (loading) btn.innerHTML = `<span class="spinner"></span>`;
+        else if (text) btn.textContent = text;
+      }
+
+      function showErr(id, msg) {
+        const el = $(id);
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add("show");
+        setTimeout(() => el.classList.remove("show"), 5000);
+      }
+      function clearErr(id) {
+        const el = $(id);
+        if (el) {
+          el.textContent = "";
+          el.classList.remove("show");
+        }
+      }
+
+      // ══════════════════════════════
+      // API HELPERS
+      // ══════════════════════════════
+      async function apiFetch(path, opts = {}) {
+        const headers = {
+          "Content-Type": "application/json",
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+          ...(opts.headers || {}),
+        };
+        const res = await fetch(API + path, { ...opts, headers });
+        const data = await res.json().catch(() => ({ error: "Server error" }));
+        if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+        return data;
+      }
+
+      // ══════════════════════════════
+      // NAVIGATION
+      // ══════════════════════════════
+      function goTo(page) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        $("page-" + page).classList.add("active");
+        window.scrollTo(0, 0);
+        updateAvatars();
+        if (page === "home") loadFeed();
+        if (page === "chat") loadConversations();
+        if (page === "myrequests") loadMyRequests("all");
+        if (page === "settings") loadSettingsProfile();
+      }
+
+      function updateAvatars() {
+        if (!currentUser) return;
+        const ini = initials(
+          `${currentUser.firstName} ${currentUser.lastName}`,
+        );
+        const color = rndColor(currentUser.firstName || "?");
+        ["home", "post", "view", "chat", "myrequests", "settings"].forEach(
+          (p) => {
+            const el = $(`nav-avatar-${p}`);
+            if (el) {
+              el.textContent = ini;
+              el.style.background = color;
+            }
+          },
+        );
+        const sa = $("settings-avatar");
+        if (sa) {
+          sa.textContent = ini;
+          sa.style.background = color;
+        }
+      }
+
+      // ══════════════════════════════
+      // AUTH
+      // ══════════════════════════════
+      function switchTab(tab) {
+        $("tab-login").classList.toggle("active", tab === "login");
+        $("tab-signup").classList.toggle("active", tab === "signup");
+        $("form-login").style.display = tab === "login" ? "flex" : "none";
+        $("form-signup").style.display = tab === "signup" ? "flex" : "none";
+        clearErr("login-err");
+        clearErr("signup-err");
+      }
+
+      async function doLogin() {
+        clearErr("login-err");
+        const email = $("login-email").value.trim();
+        const pass = $("login-pass").value;
+        if (!email || !pass) {
+          showErr("login-err", "Please fill in email and password");
+          return;
+        }
+        setLoading("login-btn", true);
+        try {
+          const data = await apiFetch("/api/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ email, password: pass }),
+          });
+          authToken = data.token;
+          currentUser = data.user;
+          localStorage.setItem("pr_token", authToken);
+          toast(`Welcome back, ${currentUser.firstName}!`, "success");
+          goTo("home");
+        } catch (e) {
+          showErr("login-err", e.message);
+        } finally {
+          setLoading("login-btn", false, "Sign in →");
+        }
+      }
+
+      async function doSignup() {
+        clearErr("signup-err");
+        const firstName = $("sig-first").value.trim();
+        const lastName = $("sig-last").value.trim();
+        const email = $("sig-email").value.trim();
+        const password = $("sig-pass").value;
+        const role = $("sig-role").value;
+        if (!firstName || !lastName || !email || !password) {
+          showErr("signup-err", "Please fill in all fields");
+          return;
+        }
+        if (password.length < 8) {
+          showErr("signup-err", "Password must be at least 8 characters");
+          return;
+        }
+        setLoading("signup-btn", true);
+        try {
+          const data = await apiFetch("/api/auth/signup", {
+            method: "POST",
+            body: JSON.stringify({
+              firstName,
+              lastName,
+              email,
+              password,
+              role,
+            }),
+          });
+          authToken = data.token;
+          currentUser = data.user;
+          localStorage.setItem("pr_token", authToken);
+          toast(`Welcome to PackRoute, ${firstName}! 🎉`, "success");
+          goTo("home");
+        } catch (e) {
+          showErr("signup-err", e.message);
+        } finally {
+          setLoading("signup-btn", false, "Create account →");
+        }
+      }
+
+      function doLogout() {
+        authToken = null;
+        currentUser = null;
+        activeConvoId = null;
+        activeConvo = null;
+        localStorage.removeItem("pr_token");
+        if (pollInterval) {
+          clearInterval(pollInterval);
+          pollInterval = null;
+        }
+        goTo("auth");
+        toast("Signed out successfully");
+      }
+
+      async function loadCurrentUser() {
+        if (!authToken) return;
+        try {
+          currentUser = await apiFetch("/api/auth/me");
+          updateAvatars();
+        } catch (e) {
+          // token expired
+          authToken = null;
+          localStorage.removeItem("pr_token");
+          goTo("auth");
+        }
+      }
+
+      // ══════════════════════════════
+      // HOME FEED
+      // ══════════════════════════════
+      function filterFeed(btn, f) {
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentFilter = f;
+        loadFeed();
+      }
+
+      async function loadFeed() {
+        $("feed-container").innerHTML =
+          `<div class="page-loader"><div class="spinner"></div><span>Loading requests…</span></div>`;
+        try {
+          const reqs = await apiFetch(`/api/requests?filter=${currentFilter}`);
+          renderFeed(reqs);
+          loadSidebarChats();
+        } catch (e) {
+          $("feed-container").innerHTML =
+            `<div class="empty"><div class="empty-icon">⚠️</div><h3>Failed to load</h3><p>${e.message}</p></div>`;
+        }
+      }
+
+      function renderFeed(reqs) {
+        if (!reqs.length) {
+          $("feed-container").innerHTML =
+            `<div class="empty"><div class="empty-icon">📭</div><h3>No requests found</h3><p>Try a different filter or check back later.</p></div>`;
+          return;
+        }
+        $("feed-container").innerHTML = reqs.map(reqCard).join("");
+      }
+
+      function reqCard(r) {
+        const isMyReq = currentUser && r.senderId === currentUser.id;
+        const chip =
+          r.status === "urgent"
+            ? '<span class="chip chip-urgent">Urgent</span>'
+            : '<span class="chip chip-open">Open</span>';
+        const desc =
+          r.description.length > 140
+            ? r.description.slice(0, 140) + "…"
+            : r.description;
+        const posted = r.createdAt ? timeAgo(r.createdAt) : "Recently";
+        const id = r._id || r.id;
+        return `<div class="req-card">
+    <div class="req-card-head">
+      <div class="req-author">
+        <div class="avatar" style="background:${rndColor(r.senderName || "User")}">${initials(r.senderName || "User")}</div>
+        <div class="req-author-info"><strong>${r.senderName || "User"}</strong><span>${posted} · ⭐ ${r.senderRating || 5.0} · ${r.senderDeliveries || 0} deliveries</span></div>
+      </div>
+      ${chip}
+    </div>
+    <div class="req-route">
+      <span class="req-route-city">${r.from}</span>
+      <span class="req-route-arrow">${svgArrow()}</span>
+      <span class="req-route-city">${r.to}</span>
+    </div>
+    <div class="req-desc">${desc}</div>
+    <div class="req-meta">
+      <div class="req-meta-item"><span>📦</span><strong>${r.weight} kg</strong></div>
+      <div class="req-meta-item"><span>📂</span><strong>${r.category}</strong></div>
+      <div class="req-meta-item"><span>📅</span>By <strong>${r.deadline}</strong></div>
+      <div class="req-meta-item"><span>💬</span><strong>${r.proposals || 0}</strong> proposals</div>
+    </div>
+    <div class="req-foot">
+      <div class="req-reward">$${r.reward}</div>
+      <div style="display:flex;gap:7px;">
+        <button class="btn btn-secondary btn-sm" onclick="openView('${id}')">View details</button>
+        ${!isMyReq ? `<button class="btn btn-primary btn-sm" onclick="openAcceptModal('${id}','${r.from}','${r.to}','${r.weight}','${r.category}','${r.reward}','${r.deadline}')">Accept request</button>` : '<span class="chip chip-closed">Your request</span>'}
+      </div>
+    </div>
+  </div>`;
+      }
+
+      async function loadSidebarChats() {
+        try {
+          const convos = await apiFetch("/api/conversations");
+          if (!convos.length) {
+            $("sidebar-chats-preview").innerHTML =
+              `<div style="padding:16px;text-align:center;font-size:.82rem;color:var(--muted);">No active chats yet</div>`;
+            return;
+          }
+          $("sidebar-chats-preview").innerHTML = convos
+            .slice(0, 3)
+            .map(
+              (c) => `
+      <div class="chat-prev-item" onclick="openChatById('${c._id}')">
+        <div class="rel-avatar"><div class="avatar" style="background:${rndColor(c.peer || "?")};width:32px;height:32px;font-size:.72rem;">${initials(c.peer || "?")}</div></div>
+        <div class="chat-prev-info"><strong>${c.peer}</strong><span>${c.lastMessage || "…"}</span></div>
+        <span class="chat-prev-time">${c.lastAt ? timeAgo(c.lastAt) : "now"}</span>
+      </div>`,
+            )
+            .join("");
+        } catch {}
+      }
+
+      async function findMatches() {
+        const f = $("route-from").value.trim(),
+          t = $("route-to").value.trim();
+        if (!f || !t) {
+          toast("Please enter both cities", "error");
+          return;
+        }
+        try {
+          const reqs = await apiFetch(
+            `/api/requests?from=${encodeURIComponent(f)}&to=${encodeURIComponent(t)}`,
+          );
+          if (!reqs.length) {
+            toast("No requests found for that route yet");
+            return;
+          }
+          toast(
+            `Found ${reqs.length} request${reqs.length > 1 ? "s" : ""} matching that route!`,
+            "success",
+          );
+          renderFeed(reqs);
+        } catch (e) {
+          toast(e.message, "error");
+        }
+      }
+
+      // ══════════════════════════════
+      // ACCEPT MODAL
+      // ══════════════════════════════
+      let pendingAcceptId = null;
+      function openAcceptModal(id, from, to, weight, cat, reward, deadline) {
+        pendingAcceptId = id;
+        $("modal-accept-info").innerHTML =
+          `<strong>${from} → ${to}</strong> · ${weight}kg ${cat}<br>Reward: <strong style="color:var(--coral)">$${reward}</strong> · Needed by ${deadline}`;
+        $("modal-accept").classList.add("open");
+      }
+
+      async function confirmAccept() {
+        if (!pendingAcceptId) return;
+        setLoading("confirm-accept-btn", true);
+        try {
+          const data = await apiFetch(
+            `/api/requests/${pendingAcceptId}/accept`,
+            { method: "POST" },
+          );
+          closeModal("modal-accept");
+          toast("Matched! Chat is now open.", "success");
+          await openChatById(data.conversationId);
+        } catch (e) {
+          toast(e.message, "error");
+        } finally {
+          setLoading("confirm-accept-btn", false, "Yes, accept request");
+        }
+      }
+
+      // ══════════════════════════════
+      // VIEW REQUEST
+      // ══════════════════════════════
+      async function openView(id) {
+        $("view-main-content").innerHTML =
+          `<div class="page-loader"><div class="spinner"></div><span>Loading request…</span></div>`;
+        $("view-sidebar-content").innerHTML = "";
+        goTo("view");
+        try {
+          await apiFetch(`/api/requests/${id}/view`, { method: "POST" }).catch(
+            () => {},
+          );
+          const r = await apiFetch(`/api/requests/${id}`);
+          currentViewReqId = id;
+          renderViewPage(r);
+        } catch (e) {
+          $("view-main-content").innerHTML =
+            `<div class="empty"><div class="empty-icon">⚠️</div><h3>Failed to load</h3><p>${e.message}</p></div>`;
+        }
+      }
+
+      function renderViewPage(r) {
+        const id = r._id || r.id;
+        const isMyReq = currentUser && r.senderId === currentUser.id;
+        const chip =
+          r.status === "urgent"
+            ? '<span class="chip chip-urgent">Urgent</span>'
+            : '<span class="chip chip-open">Open</span>';
+        const tags = (r.tags || [])
+          .map((t) => `<span class="tag">${t}</span>`)
+          .join("");
+        const qnaHtml = (r.qna || [])
+          .map(
+            (q) => `
+    <div class="qna-item"><div class="avatar" style="background:${rndColor(q.questionBy || "?")};width:28px;height:28px;font-size:.68rem;flex-shrink:0;">${initials(q.questionBy || "?")}</div>
+      <div class="qna-bubble"><div class="qna-name">${q.questionBy}</div><div class="qna-text">${q.question}</div></div></div>
+    ${
+      q.answer
+        ? `<div class="qna-item" style="padding-left:38px;"><div class="avatar" style="background:${rndColor(r.senderName || "?")};width:28px;height:28px;font-size:.68rem;flex-shrink:0;">${initials(r.senderName || "?")}</div>
+      <div class="qna-bubble answer"><div class="qna-name">${r.senderName} (sender)</div><div class="qna-text">${q.answer}</div></div></div>`
+        : isMyReq
+          ? `<div style="padding-left:38px;margin-bottom:8px;"><input type="text" id="ans-${q.id}" placeholder="Write your answer…" style="font-size:.85rem;"/><button class="btn btn-secondary btn-sm" style="margin-top:6px;" onclick="submitAnswer('${id}','${q.id}')">Post answer</button></div>`
+          : ""
+    }
+  `,
+          )
+          .join("");
+
+        $("view-main-content").innerHTML = `
+    <div class="view-hero">
+      <button class="back-btn" onclick="goTo('home')" style="margin-bottom:14px;">←</button>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">${chip}<span class="chip" style="background:var(--sand-2);color:var(--ink-3);">${r.category}</span>${tags}</div>
+      <div style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:400;line-height:1.3;margin-bottom:6px;">${r.from} to ${r.to} — ${r.category} delivery request</div>
+      <p style="font-size:.82rem;color:var(--muted);">Posted ${r.createdAt ? timeAgo(r.createdAt) : "Recently"} · ${r.views || 0} views · ${r.proposals || 0} proposals</p>
+      <div class="view-route-viz">
+        <div class="view-city"><strong>${r.from}</strong><span>${r.fromAddr || r.from}</span></div>
+        <div class="route-line"><div class="route-dot left"></div><div class="route-badge">✈ ${r.handoff === "At airport — I'll meet you" ? "Airport handoff" : "Flexible handoff"}</div><div class="route-dot right"></div></div>
+        <div class="view-city"><strong>${r.to}</strong><span>${r.toAddr || r.to}</span></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-box"><strong>$${r.reward}</strong><span>Traveler reward</span></div>
+        <div class="stat-box"><strong>${r.weight} kg</strong><span>Package weight</span></div>
+        <div class="stat-box"><strong>${r.deadline}</strong><span>Needed by</span></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px;">
+        <div class="req-author">
+          <div class="avatar" style="background:${rndColor(r.senderName || "?")}">${initials(r.senderName || "?")}</div>
+          <div class="req-author-info"><strong>${r.senderName || "Sender"}</strong><span>⭐ ${r.senderRating || 5.0} · ${r.senderDeliveries || 0} successful deliveries</span></div>
+        </div>
+        ${!isMyReq ? `<div style="display:flex;gap:7px;"><button class="btn btn-primary" onclick="openAcceptModal('${id}','${r.from}','${r.to}','${r.weight}','${r.category}','${r.reward}','${r.deadline}')">Accept request</button></div>` : '<span class="chip chip-closed">Your own request</span>'}
+      </div>
+    </div>
+    <div class="card">
+      <div class="form-section-title">About the package</div>
+      <p style="font-size:.9rem;line-height:1.7;color:var(--ink-3);margin-bottom:14px;">${r.description}</p>
+      <div class="form-section-title" style="margin-top:4px;">What you'll need to do</div>
+      <ul class="req-list">
+        <li>Meet the sender at <strong>${r.fromAddr || r.from}</strong> to receive the package</li>
+        <li>Carry it as personal luggage on your flight to <strong>${r.to}</strong></li>
+        <li>Hand it off to the recipient at <strong>${r.toAddr || r.to}</strong></li>
+        <li>Confirm delivery complete on PackRoute to release your payment</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="form-section-title">Questions & answers (${(r.qna || []).length})</div>
+      ${qnaHtml || `<div style="font-size:.875rem;color:var(--muted);margin-bottom:12px;">No questions yet. Be the first to ask!</div>`}
+      ${
+        !isMyReq
+          ? `<div style="display:flex;gap:8px;margin-top:12px;">
+        <input type="text" id="qna-input-${id}" placeholder="Ask the sender a question…" style="font-size:.875rem;" onkeydown="if(event.key==='Enter')submitQuestion('${id}')"/>
+        <button class="btn btn-secondary btn-sm" onclick="submitQuestion('${id}')">Ask</button>
+      </div>`
+          : ""
+      }
+    </div>
+  `;
+
+        $("view-sidebar-content").innerHTML = `
+    <div class="budget-card"><div class="budget-amount">$${r.reward}</div><div class="budget-label">Traveler reward</div></div>
+    <div class="card card-sm" style="margin-bottom:12px;">
+      <div style="font-size:.8rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Request details</div>
+      ${metaRow("Route", `${r.from} → ${r.to}`)}
+      ${metaRow("Category", r.category)}
+      ${metaRow("Weight", `${r.weight} kg · ${r.size}`)}
+      ${metaRow("Handoff", r.handoff)}
+      ${metaRow("Deadline", r.deadline)}
+      ${metaRow("Status", r.status.charAt(0).toUpperCase() + r.status.slice(1))}
+      ${metaRow("Proposals", `${r.proposals || 0} received`)}
+    </div>
+    <div class="card card-sm">
+      <div style="font-size:.85rem;font-weight:500;margin-bottom:12px;">About the sender</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div class="avatar" style="background:${rndColor(r.senderName || "?")};width:40px;height:40px;">${initials(r.senderName || "?")}</div>
+        <div><div style="font-weight:500;font-size:.9rem;">${r.senderName || "Sender"}</div><div style="font-size:.78rem;color:var(--muted);">⭐ ${r.senderRating || 5.0} · ${r.senderDeliveries || 0} deliveries</div></div>
+      </div>
+      ${!isMyReq ? `<button class="btn btn-primary btn-block" onclick="openAcceptModal('${id}','${r.from}','${r.to}','${r.weight}','${r.category}','${r.reward}','${r.deadline}')">Accept this request</button>` : ""}
+    </div>
+    <div class="card card-sm" style="background:#FEF4F0;border-color:#F0C4B0;margin-top:12px;">
+      <div style="font-size:.8rem;font-weight:500;color:var(--coral-2);margin-bottom:5px;">🔒 Safety reminder</div>
+      <p style="font-size:.78rem;color:var(--ink-3);line-height:1.55;">Always inspect the package contents in person before accepting. Never carry sealed items you haven't checked yourself.</p>
+    </div>
+  `;
+      }
+
+      function metaRow(label, val) {
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.83rem;"><span style="color:var(--muted);">${label}</span><span style="font-weight:500;">${val}</span></div>`;
+      }
+
+      async function submitQuestion(reqId) {
+        const inp = $(`qna-input-${reqId}`);
+        if (!inp || !inp.value.trim()) {
+          toast("Please type a question", "error");
+          return;
+        }
+        try {
+          await apiFetch(`/api/requests/${reqId}/question`, {
+            method: "POST",
+            body: JSON.stringify({ question: inp.value.trim() }),
+          });
+          toast("Question submitted!", "success");
+          inp.value = "";
+          openView(reqId);
+        } catch (e) {
+          toast(e.message, "error");
+        }
+      }
+
+      async function submitAnswer(reqId, qnaId) {
+        const inp = $(`ans-${qnaId}`);
+        if (!inp || !inp.value.trim()) {
+          toast("Please type an answer", "error");
+          return;
+        }
+        try {
+          await apiFetch(`/api/requests/${reqId}/answer/${qnaId}`, {
+            method: "POST",
+            body: JSON.stringify({ answer: inp.value.trim() }),
+          });
+          toast("Answer posted!", "success");
+          openView(reqId);
+        } catch (e) {
+          toast(e.message, "error");
+        }
+      }
+
+      function viewCurrentRequest() {
+        if (activeConvo && activeConvo.reqId) openView(activeConvo.reqId);
+      }
+
+      // ══════════════════════════════
+      // CHAT
+      // ══════════════════════════════
+      async function loadConversations() {
+        $("chat-list-panel").innerHTML =
+          `<div class="page-loader"><div class="spinner"></div></div>`;
+        try {
+          const convos = await apiFetch("/api/conversations");
+          renderChatList(convos);
+          if (activeConvoId) {
+            const c = convos.find(
+              (x) =>
+                x._id === activeConvoId || x._id.toString() === activeConvoId,
+            );
+            if (c) {
+              activeConvo = c;
+              renderChatWindow();
+            }
+          }
+        } catch (e) {
+          toast(e.message, "error");
+        }
+      }
+
+      function renderChatList(convos) {
+        if (!convos.length) {
+          $("chat-list-panel").innerHTML =
+            `<div style="padding:20px;text-align:center;font-size:.82rem;color:var(--muted);">No conversations yet.<br>Accept a request to start chatting.</div>`;
+          return;
+        }
+        $("chat-list-panel").innerHTML = convos
+          .map(
+            (c) => `
+    <div class="chat-list-item ${activeConvoId && (c._id === activeConvoId || c._id.toString() === activeConvoId) ? "active" : ""}" onclick="openChatById('${c._id}')">
+      <div class="rel-avatar">
+        <div class="avatar" style="background:${rndColor(c.peer || "?")};width:36px;height:36px;font-size:.8rem;">${initials(c.peer || "?")}</div>
+        <div class="online-dot offline"></div>
+      </div>
+      <div class="cli-info">
+        <div class="cli-name">${c.peer || "User"}</div>
+        <div class="cli-preview">${c.lastMessage || "…"}</div>
+      </div>
+      <div class="cli-meta"><span class="cli-time">${c.lastAt ? timeAgo(c.lastAt) : "now"}</span></div>
+    </div>`,
+          )
+          .join("");
+      }
+
+      async function openChatById(cid) {
+        activeConvoId = cid.toString();
+        goTo("chat");
+        try {
+          activeConvo = await apiFetch(`/api/conversations/${cid}`);
+          renderChatWindow();
+          // Start polling for new messages
+          if (pollInterval) clearInterval(pollInterval);
+          pollInterval = setInterval(() => pollMessages(cid), 3000);
+        } catch (e) {
+          toast(e.message, "error");
+        }
+      }
+
+      async function pollMessages(cid) {
+        try {
+          const fresh = await apiFetch(`/api/conversations/${cid}`);
+          if (fresh.messages.length !== (activeConvo?.messages?.length || 0)) {
+            activeConvo = fresh;
+            renderChatWindow();
+          }
+        } catch {}
+      }
+
+      function renderChatWindow() {
+        if (!activeConvo) return;
+        const c = activeConvo;
+        $("chat-empty-state").style.display = "none";
+        const ca = $("chat-active");
+        ca.style.display = "flex";
+        $("chat-peer-avatar").textContent = initials(c.peer || "?");
+        $("chat-peer-avatar").style.background = rndColor(c.peer || "?");
+        $("chat-peer-name").textContent = c.peer || "User";
+        $("chat-peer-status").textContent = "Active in this conversation";
+        $("chat-route-label").textContent = c.reqRoute || "Route";
+        $("chat-reward-label").textContent = c.reqReward || "—";
+        const msgs = $("chat-messages");
+        const myId = currentUser?.id || currentUser?._id?.toString();
+        msgs.innerHTML =
+          `<div class="day-sep">Conversation</div>` +
+          (c.messages || [])
+            .map((m) => {
+              const isMe = m.from === myId || m.from === currentUser?.id;
+              return `<div class="msg-row ${isMe ? "mine" : ""}">
+      ${!isMe ? `<div class="avatar" style="background:${rndColor(c.peer || "?")};width:28px;height:28px;font-size:.65rem;flex-shrink:0;">${initials(c.peer || "?")}</div>` : ""}
+      <div>
+        <div class="msg-bubble">${m.text}</div>
+        <div class="msg-time">${m.t ? fmtTime(m.t) : ""}</div>
+      </div>
+    </div>`;
+            })
+            .join("");
+        msgs.scrollTop = msgs.scrollHeight;
+        // Also update list
+        loadConversations().catch(() => {});
+      }
+
+      async function sendMessage() {
+        const input = $("chat-input");
+        const text = input.value.trim();
+        if (!text || !activeConvoId) return;
+        input.value = "";
+        input.style.height = "auto";
+        // Optimistic update
+        const myId = currentUser?.id || currentUser?._id?.toString();
+        const tempMsg = { from: myId, text, t: new Date().toISOString() };
+        if (activeConvo) activeConvo.messages.push(tempMsg);
+        renderChatWindow();
+        try {
+          await apiFetch(`/api/conversations/${activeConvoId}/messages`, {
+            method: "POST",
+            body: JSON.stringify({ text }),
+          });
+          // Refresh
+          activeConvo = await apiFetch(`/api/conversations/${activeConvoId}`);
+          renderChatWindow();
+        } catch (e) {
+          toast(e.message, "error");
+        }
+      }
+
+      function filterChats(q) {
+        document.querySelectorAll(".chat-list-item").forEach((el) => {
+          const name = el.querySelector(".cli-name")?.textContent || "";
+          el.style.display = name.toLowerCase().includes(q.toLowerCase())
+            ? ""
+            : "none";
+        });
+      }
+
+      // ══════════════════════════════
+      // MY REQUESTS
+      // ══════════════════════════════
+      let myReqTab = "all";
+      function switchMyTab(el, tab) {
+        document
+          .querySelectorAll(".status-tab")
+          .forEach((t) => t.classList.remove("active"));
+        el.classList.add("active");
+        myReqTab = tab;
+        loadMyRequests(tab);
+      }
+
+      async function loadMyRequests(tab) {
+        $("myr-list").innerHTML =
+          `<div class="page-loader"><div class="spinner"></div><span>Loading…</span></div>`;
+        try {
+          const reqs = await apiFetch(`/api/my-requests?status=${tab}`);
+          if (!reqs.length) {
+            $("myr-list").innerHTML =
+              `<div class="empty"><div class="empty-icon">📭</div><h3>No ${tab === "all" ? "" : tab} requests</h3><p>${tab === "all" ? "You haven't posted any delivery requests yet." : "No requests with this status."}</p><br><button class="btn btn-primary" onclick="goTo('post')">Post your first request</button></div>`;
+            return;
+          }
+          $("myr-list").innerHTML = reqs
+            .map((r) => {
+              const id = r._id || r.id;
+              const posted = r.createdAt ? timeAgo(r.createdAt) : "Recently";
+              return `<div class="req-manage-card">
+        <div class="req-manage-head">
+          <div>
+            <div class="req-manage-route">${r.from} → ${r.to}</div>
+            <div class="req-manage-meta">${r.category} · ${r.weight}kg · Posted ${posted} · $${r.reward} reward</div>
+          </div>
+          <span class="chip ${r.status === "urgent" ? "chip-urgent" : r.status === "open" ? "chip-open" : r.status === "matched" ? "chip-matched" : "chip-closed"}">${r.status}</span>
+        </div>
+        <div class="req-manage-foot">
+          <div class="req-manage-stats">
+            <span class="req-manage-stat">💬 ${r.proposals || 0} proposals</span>
+            <span class="req-manage-stat">👁 ${r.views || 0} views</span>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="openView('${id}')">View</button>
+            ${r.status !== "closed" ? `<button class="btn btn-danger btn-sm" onclick="withdrawRequest('${id}',this)">Withdraw</button>` : ""}
+          </div>
+        </div>
+      </div>`;
+            })
+            .join("");
+        } catch (e) {
+          toast(e.message, "error");
+        }
+      }
+
+      async function withdrawRequest(id, btn) {
+        if (!confirm("Are you sure you want to withdraw this request?")) return;
+        btn.disabled = true;
+        try {
+          await apiFetch(`/api/requests/${id}`, { method: "DELETE" });
+          toast("Request withdrawn", "success");
+          loadMyRequests(myReqTab);
+        } catch (e) {
+          toast(e.message, "error");
+          btn.disabled = false;
+        }
+      }
+
+      // ══════════════════════════════
+      // POST REQUEST
+      // ══════════════════════════════
+      async function publishRequest() {
+        const from = $("p-from").value.trim(),
+          to = $("p-to").value.trim();
+        const desc = $("p-desc").value.trim(),
+          reward = $("p-reward").value;
+        const dead = $("p-deadline").value,
+          weight = $("p-weight").value;
+        if (!from || !to || !desc || !reward || !dead || !weight) {
+          toast("Please fill in all required fields (*)", "error");
+          return;
+        }
+        const tags = [...$("page-post").querySelectorAll(".tag-chip.sel")].map(
+          (el) => el.textContent,
+        );
+        setLoading("publish-btn", true);
+        try {
+          await apiFetch("/api/requests", {
+            method: "POST",
+            body: JSON.stringify({
+              from,
+              to,
+              fromAddr: $("p-from-addr").value || from,
+              toAddr: $("p-to-addr").value || to,
+              category: $("p-cat").value,
+              weight: parseFloat(weight),
+              size: $("p-size").value,
+              description: desc,
+              tags,
+              reward: parseFloat(reward),
+              deadline: dead,
+              handoff: $("p-handoff").value,
+              visibility: $("p-vis").value,
+            }),
+          });
+          toast("Request published! Travelers will see it now 🎉", "success");
+          clearPostForm();
+          goTo("home");
+        } catch (e) {
+          toast(e.message, "error");
+        } finally {
+          setLoading("publish-btn", false, "Publish request →");
+        }
+      }
+
+      function clearPostForm() {
+        [
+          "p-from",
+          "p-to",
+          "p-from-addr",
+          "p-to-addr",
+          "p-desc",
+          "p-reward",
+          "p-deadline",
+          "p-weight",
+        ].forEach((id) => {
+          const el = $(id);
+          if (el) el.value = "";
+        });
+        $("page-post")
+          .querySelectorAll(".tag-chip")
+          .forEach((c) => c.classList.remove("sel"));
+      }
+
+      // ══════════════════════════════
+      // SETTINGS
+      // ══════════════════════════════
+      function settingsSection(el, sec) {
+        document
+          .querySelectorAll(".settings-nav-item")
+          .forEach((i) => i.classList.remove("active"));
+        el.classList.add("active");
+        ["profile", "notifications", "privacy", "payments", "security"].forEach(
+          (s) => {
+            const panel = $(`settings-${s}`);
+            if (panel) panel.style.display = s === sec ? "block" : "none";
+          },
+        );
+      }
+
+      async function loadSettingsProfile() {
+        try {
+          const u = await apiFetch("/api/auth/me");
+          currentUser = u;
+          $("set-first").value = u.firstName || "";
+          $("set-last").value = u.lastName || "";
+          $("set-email").value = u.email || "";
+          $("set-phone").value = u.phone || "";
+          $("set-bio").value = u.bio || "";
+          updateAvatars();
+        } catch {}
+      }
+
+      async function saveProfile() {
+        const firstName = $("set-first").value.trim(),
+          lastName = $("set-last").value.trim();
+        if (!firstName || !lastName) {
+          toast("Name cannot be empty", "error");
+          return;
+        }
+        setLoading("save-profile-btn", true);
+        try {
+          await apiFetch("/api/settings/profile", {
+            method: "PATCH",
+            body: JSON.stringify({
+              firstName,
+              lastName,
+              phone: $("set-phone").value,
+              bio: $("set-bio").value,
+            }),
+          });
+          if (currentUser) {
+            currentUser.firstName = firstName;
+            currentUser.lastName = lastName;
+          }
+          updateAvatars();
+          toast("Settings saved", "success");
+        } catch (e) {
+          toast(e.message, "error");
+        } finally {
+          setLoading("save-profile-btn", false, "Save changes");
+        }
+      }
+
+      async function changePassword() {
+        clearErr("pass-err");
+        const cur = $("cur-pass").value,
+          nw = $("new-pass").value,
+          conf = $("conf-pass").value;
+        if (!cur || !nw || !conf) {
+          showErr("pass-err", "All fields required");
+          return;
+        }
+        if (nw !== conf) {
+          showErr("pass-err", "New passwords do not match");
+          return;
+        }
+        setLoading("change-pass-btn", true);
+        try {
+          await apiFetch("/api/settings/password", {
+            method: "PATCH",
+            body: JSON.stringify({ currentPassword: cur, newPassword: nw }),
+          });
+          toast("Password updated", "success");
+          $("cur-pass").value = "";
+          $("new-pass").value = "";
+          $("conf-pass").value = "";
+        } catch (e) {
+          showErr("pass-err", e.message);
+        } finally {
+          setLoading("change-pass-btn", false, "Update password");
+        }
+      }
+
+      // ══════════════════════════════
+      // INIT
+      // ══════════════════════════════
+      (async function init() {
+        const d = $("p-deadline");
+        if (d) {
+          d.min = new Date().toISOString().split("T")[0];
+        }
+        if (authToken) {
+          await loadCurrentUser();
+          if (currentUser) goTo("home");
+          else {
+            authToken = null;
+            localStorage.removeItem("pr_token");
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>
