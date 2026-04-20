@@ -56,11 +56,9 @@ let db;
 MongoClient.connect(MONGO_URI)
   .then((client) => {
     db = client.db("packroute");
-    console.log("✅ MongoDB connected");
+    console.log("MongoDB connected");
     app.listen(PORT, () => {
-      console.log(`🚀 Server running at http://localhost:${PORT}`);
-      console.log(`   Open http://localhost:${PORT} in your browser`);
-      console.log(`   (Do NOT use Live Server — use this URL directly)`);
+      console.log(`Server running`);
     });
   })
   .catch((err) => {
