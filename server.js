@@ -62,7 +62,7 @@ MongoClient.connect(MONGO_URI)
     });
   })
   .catch((err) => {
-    console.error("❌ MongoDB connection failed:", err.message);
+    console.error("MongoDB connection failed:", err.message);
     process.exit(1);
   });
 
@@ -224,7 +224,6 @@ app.get("/api/requests", auth, async (req, res) => {
           { _id: new ObjectId(r.senderId) },
           {
             projection: {
-              password: 0,
               firstName: 1,
               lastName: 1,
               rating: 1,
@@ -464,7 +463,7 @@ app.post("/api/requests/:id/accept", auth, async (req, res) => {
         .collection("users")
         .findOne(
           { _id: new ObjectId(r.senderId) },
-          { projection: { password: 0, firstName: 1, lastName: 1 } },
+          { projection: { firstName: 1, lastName: 1 } },
         );
       const convoDoc = {
         reqId: req.params.id,
